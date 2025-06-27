@@ -1,23 +1,27 @@
-import { joinFruits } from './module.js';
+function extractFruits() {
+  const items = Array.from(document.querySelectorAll(".fruit")).map(el => el.textContent.trim());
+  return items.join(",");
+}
 
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-  if (message.type === "COPY_FRUITS" && message.tabId) {
-    const [{ result: rawList }] = await chrome.scripting.executeScript({
-      target: { tabId: message.tabId },
-      function: () => {
-        return Array.from(document.querySelectorAll(".fruit")).map(el => el.textContent);
-      }
-    });
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command === "copy-fruits") {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    const tmp = joinFruits(rawList);
+    try {
+      const [{ result: tmp }] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        function: extractFruits,
+      });
 
-    await chrome.scripting.executeScript({
-      target: { tabId: message.tabId },
-      func: (text) => navigator.clipboard.writeText(text),
-      args: [tmp]
-    });
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: (text) => navigator.clipboard.writeText(text),
+        args: [tmp],
+      });
 
-    sendResponse({ success: true, content: tmp });
-    return true; // keep message channel open
+      console.log("已複製水果清單：" + tmp);
+    } catch (err) {
+      console.error("複製失敗：", err);
+    }
   }
 });
