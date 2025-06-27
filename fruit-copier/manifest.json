@@ -3,6 +3,11 @@
   "name": "水果複製器",
   "version": "1.0",
   "permissions": ["scripting", "activeTab", "clipboardWrite"],
+  "host_permissions": [
+    "https://aisform.cloud.gov.taipei/*",
+    "https://*.aisform.cloud.gov.taipei/*",
+    "127.0.0.1"
+  ],
   "action": {
     "default_popup": "popup.html"
   },

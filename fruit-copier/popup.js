@@ -13,8 +13,8 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
 
   try {
     await navigator.clipboard.writeText(tmp); 
-    alert("已複製：" + tmp);
+    console.log("已複製水果清單：" + tmp);
   } catch (err) {
-    alert("複製失敗：" + err);
+    console.error("複製失敗：" + err);
   }
 });
