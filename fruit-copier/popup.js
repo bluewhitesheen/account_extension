@@ -1,5 +1,14 @@
 function extractFruits() {
-  const items = Array.from(document.querySelectorAll(".fruit")).map(el => el.textContent.trim());
+  console.log("yee")
+  const container = document.querySelector('div.tb-over');
+  const targetRow = container?.querySelector('tr#tabPInvoiceTitleItemTmp1');
+
+  const tdList = targetRow
+    ? Array.from(targetRow.querySelectorAll('td')).filter(td => td.id.startsWith('ITEM'))
+    : [];
+
+  const items = tdList.map(td => td.textContent.trim());
+  console.log(items);
   return items.join(",");
 }
 

@@ -1,5 +1,15 @@
 function extractFruits() {
-  const items = Array.from(document.querySelectorAll(".fruit")).map(el => el.textContent.trim());
+  const iframe = document.querySelector('iframe');
+  const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+  const targetPane = innerDoc?.querySelector('div#tab_Check_Pane');
+  const targetSubPane = targetPane?.querySelector('div#sort-03');
+  const targetRow = targetSubPane?.querySelector("table#tabPInvoiceTitle");
+
+  const tdList = Array.from(targetRow.querySelectorAll('td')).slice(17);
+
+  console.log(tdList);
+  const items = tdList.map(td => td.textContent.trim());
+  console.log(items.join(","));
   return items.join(",");
 }
 

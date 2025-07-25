@@ -5,8 +5,7 @@
   "permissions": ["scripting", "activeTab", "clipboardWrite"],
   "host_permissions": [
     "https://aisform.cloud.gov.taipei/*",
-    "https://*.aisform.cloud.gov.taipei/*",
-    "127.0.0.1"
+    "https://*.aisform.cloud.gov.taipei/*"
   ],
   "action": {
     "default_popup": "popup.html"
