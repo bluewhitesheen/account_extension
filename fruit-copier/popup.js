@@ -4,10 +4,7 @@ function extractFruits() {
   const targetPane = innerDoc?.querySelector('div#tab_Check_Pane');
   const targetSubPane = targetPane?.querySelector('div#sort-03');
   const targetRow = targetSubPane?.querySelector("table#tabPInvoiceTitle");
-
   const tdList = Array.from(targetRow.querySelectorAll('td')).slice(17);
-
-  console.log(tdList);
   const items = tdList.map(td => td.textContent.trim());
   const subItems = items.slice(7, 10);
 
