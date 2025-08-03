@@ -1,3 +1,14 @@
+let payeeMap = null;
+
+async function initPayeeMap() {
+  if (payeeMap) return payeeMap;
+  const res = await fetch(chrome.runtime.getURL('account.json'));
+  const data = await res.json();
+  payeeMap = new Map(data["受款人s"]["受款人"].map(p => [String(p["編號"]), p]));
+  return payeeMap;
+}
+initPayeeMap();
+
 function extractFruits() {
   function getTodayDate() {
     const today = new Date();
@@ -77,14 +88,19 @@ function extractFruits() {
     if (field === "郵遞區號") return "";
     if (field === "電話") return "";
     if (field === "電子郵件") return "";
-    if (field === "個人或公司") return "";
+    if (field === "個人或公司") {
+      const code = String(receiptSelectedItems[2]) || String(InvoiceItems[23]) || "";
+      return /^\d{8}$/.test(code) ? "1" : "0";
+    }
     if (field === "受款人清單匯入") return "1";
 
     return ""; // fallback
   });
 
-  const output = record.join("\t");
-  return output;
+  return {
+    record,
+    payeeId: receiptSelectedItems[2] || InvoiceItems[23] || ""
+  };
 }
 
 chrome.commands.onCommand.addListener(async (command) => {
@@ -92,18 +108,36 @@ chrome.commands.onCommand.addListener(async (command) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     try {
-      const [{ result: tmp }] = await chrome.scripting.executeScript({
+      // 1. 先取得所有靜態資料
+      const [{ result }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        function: extractFruits,
+        function: extractFruits
       });
+      const { record, payeeId } = result;
+
+      // 2. 取銀行資料（假設 getBankInfoAsync 實作正確）
+      await initPayeeMap();
+      const bankInfo = payeeMap.get(String(payeeId));
+
+      // 3. 填銀行相關格子
+      if (bankInfo) {
+        // 例如 record[27] 是 金融機構代號、record[29] 是 金融機構名稱 ...
+        // 你要根據 fields 的 index，或先 fields.indexOf("金融機構名稱") 來補
+        record[28] = bankInfo?.["金融機構代號"] || "";
+        record[30] = bankInfo?.["金融機構名稱"] || "";
+        record[31] = bankInfo?.["銀行帳號"] || "";
+      }
+
+      // 4. join & 複製
+      const output = record.join('\t');
 
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: (text) => navigator.clipboard.writeText(text),
-        args: [tmp],
+        args: [output],
       });
 
-      console.log("已複製水果清單：" + tmp);
+      console.log("已複製水果清單：" + output);
     } catch (err) {
       console.error("複製失敗：", err);
     }
