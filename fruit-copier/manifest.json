@@ -2,10 +2,11 @@
   "manifest_version": 3,
   "name": "水果複製器",
   "version": "1.0",
-  "permissions": ["scripting", "activeTab", "clipboardWrite"],
+  "permissions": ["scripting", "activeTab", "clipboardWrite", "clipboardRead"],
   "host_permissions": [
     "https://aisform.cloud.gov.taipei/*",
-    "https://*.aisform.cloud.gov.taipei/*"
+    "https://*.aisform.cloud.gov.taipei/*",
+    "https://accounting.moe.gov.tw/*"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -16,6 +17,12 @@
         "default": "Alt+Q"
       },
       "description": "複製水果清單"
+    },
+    "paste-fruits": {
+      "suggested_key": {
+        "default": "Alt+W"
+      },
+      "description": "貼上水果"
     }
   },
   "background": {

@@ -20,23 +20,20 @@ function extractFruits() {
 
   const iframe = document.querySelector('iframe');
   const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-  const targetPane = innerDoc?.querySelector('div#tab_Check_Pane');
   
   const expendUsage = innerDoc.querySelector('#tarSummary').value;
   const AISNumber = innerDoc.querySelector("#txtVisa").value
   
-  const subPane2 = targetPane?.querySelector('div#sort-02');
-  const targetRow2 = subPane2?.querySelector("table#tabVisaList");
+  const targetRow2 = innerDoc?.querySelector("table#tabVisaList");
   const tdList2 = Array.from(targetRow2.querySelectorAll('td'));
   const items2 = tdList2.map(td => td.textContent.trim());
   console.log(expendUsage, AISNumber, items2[17]);
 
-  const subPane3 = targetPane?.querySelector('div#sort-03');
-  const targetInvoice = subPane3?.querySelector("table#tabInvoiceTitle");
+  const targetInvoice = innerDoc?.querySelector("table#tabInvoiceTitle");
   const InvoiceList = Array.from(targetInvoice.querySelectorAll('td'));
   const InvoiceItems = InvoiceList.map(td => td.textContent.trim());
 
-  const targetReceipt = subPane3?.querySelector("table#tabPInvoiceTitle");
+  const targetReceipt = innerDoc?.querySelector("table#tabPInvoiceTitle");
   const receiptList = Array.from(targetReceipt.querySelectorAll('td')).slice(17);
   const receiptItems = receiptList.map(td => td.textContent.trim());
   const receiptSelectedItems = receiptItems.slice(7, 10);
@@ -67,7 +64,7 @@ function extractFruits() {
     if (field === "支票特別註記") return "";
     if (field === "交付方式") return "";
     if (field === "發票號碼") return InvoiceItems[15] || "";
-    if (field === "發票日期") return InvoiceItems[16].replaceAll("/", "-") || "";
+    if (field === "發票日期") return InvoiceItems[16]?.replaceAll("/", "-") || "";
     if (field === "發票金額") return InvoiceItems[18] || "";
     if (field === "附記事項") return "";
     if (field === "明細備註") return expendUsage || "";
@@ -141,5 +138,24 @@ chrome.commands.onCommand.addListener(async (command) => {
     } catch (err) {
       console.error("複製失敗：", err);
     }
+  }
+
+  if (command === "paste-fruits") {
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    if (!tab.id) return;
+
+    await chrome.scripting.executeScript({
+      target: {tabId: tab.id},
+      func: async () => {
+        // 必須在 content script 執行，這樣才能 alert
+        try {
+          const text = await navigator.clipboard.readText();
+          const textList = text.split("\t");
+          console.log(textList);
+        } catch (e) {
+          console.log('無法讀取剪貼簿內容！');
+        }
+      }
+    });
   }
 });
